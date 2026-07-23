@@ -117,7 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     status.set_defaults(func=cmd_status)
 
     register = sub.add_parser("register", help="add or update a repo in the registry")
-    register.add_argument("name", help="repo name (e.g. mycase_app)")
+    register.add_argument("name", help="repo name (any short identifier)")
     register.add_argument("--main", required=True, help="main worktree path")
     register.add_argument("--rebuild", required=True, nargs="+", help="rebuild command (argv)")
     register.add_argument("--base", default="develop", help="default base branch")
