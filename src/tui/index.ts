@@ -25,11 +25,18 @@ export async function runTUI(opts: RunOpts = {}): Promise<number> {
   process.on('exit', leave);
   process.on('SIGTERM', leave);
 
+  // On resize, clear the alt-screen so Ink's next frame starts from a blank
+  // buffer. Without this, shrinking the terminal leaves ghost frames from
+  // previous wider renders.
+  const onResize = () => process.stdout.write('\x1b[2J\x1b[H');
+  process.stdout.on('resize', onResize);
+
   const tree = React.createElement(ThemeContext.Provider, { value: theme }, React.createElement(App));
   const instance = render(tree);
   try {
     await instance.waitUntilExit();
   } finally {
+    process.stdout.off('resize', onResize);
     leave();
   }
   return 0;
