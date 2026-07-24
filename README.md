@@ -88,7 +88,8 @@ Standard vim motions (`j`/`k`/`gg`/`G`/`Ctrl-U`/`Ctrl-D`) work for nav in the ta
 | `r` | Release the lock on the selected row's repo |
 | `s` | Steal the lock on the selected row's repo (refuses if main worktree is dirty) |
 | `R` | Force refresh |
-| `q` / `Ctrl+C` | Quit |
+| `Ctrl+C` | Clear the input box (only when input is open) |
+| `q` / `Ctrl+Q` | Quit |
 
 ## Theming
 

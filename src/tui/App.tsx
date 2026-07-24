@@ -256,14 +256,20 @@ export function App(): React.ReactElement {
 
   useInput(
     (input, key) => {
-      // While input box is focused, only handle Escape here; TextInput consumes the rest.
+      // While input box is focused, TextInput consumes typing; we handle
+      // Escape (cancel) and Ctrl+C (clear value, matching Claude Code UX).
       if (inputOpen) {
-        if (key.escape) closePanels();
+        if (key.escape) return closePanels();
+        if (key.ctrl && input === 'c') {
+          setInputValue('');
+          return;
+        }
+        if (key.ctrl && input === 'q') return exit();
         return;
       }
 
       // Global keys — work in both table and preview modes.
-      if (key.ctrl && input === 'c') return exit();
+      if (key.ctrl && input === 'q') return exit();
       if (input === 'q') return exit();
       if (key.escape) return closePanels();
       if (input === 'i') {

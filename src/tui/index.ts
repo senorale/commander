@@ -32,7 +32,9 @@ export async function runTUI(opts: RunOpts = {}): Promise<number> {
   process.stdout.on('resize', onResize);
 
   const tree = React.createElement(ThemeContext.Provider, { value: theme }, React.createElement(App));
-  const instance = render(tree);
+  // exitOnCtrlC:false — Ctrl+C is repurposed inside the app (clear input);
+  // Ctrl+Q is the quit binding.
+  const instance = render(tree, { exitOnCtrlC: false });
   try {
     await instance.waitUntilExit();
   } finally {
