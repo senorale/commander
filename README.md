@@ -17,7 +17,7 @@ Solves two problems:
 
 ## Install
 
-Requires Python 3.9+ and macOS (iTerm2 integration is AppleScript).
+Requires Node 20+ and macOS (iTerm2 integration is AppleScript).
 
 ```bash
 git clone https://github.com/senorale/commander.git ~/projects/commander
@@ -25,7 +25,7 @@ cd ~/projects/commander
 make install
 ```
 
-`make install` creates `~/projects/commander/.venv`, installs `textual`, and links `~/.local/bin/commander` (XDG). Ensure `~/.local/bin` is in your PATH:
+`make install` runs `npm install`, builds the TypeScript, and links `~/.local/bin/commander` (XDG). Ensure `~/.local/bin` is in your PATH:
 
 ```bash
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
@@ -33,6 +33,7 @@ source ~/.zshrc
 ```
 
 Install warns if iTerm2 is not the current terminal — commander drives iTerm2 via AppleScript (tab focus, buffer capture). Install with `brew install --cask iterm2`.
+
 
 ## Register your repos
 
