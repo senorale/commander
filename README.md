@@ -17,7 +17,7 @@ Solves two problems:
 
 ## Install
 
-Requires Python 3.9+ and macOS (iTerm2 integration is AppleScript).
+Requires Node 20+ and macOS (iTerm2 integration is AppleScript).
 
 ```bash
 git clone https://github.com/senorale/commander.git ~/projects/commander
@@ -25,7 +25,7 @@ cd ~/projects/commander
 make install
 ```
 
-`make install` creates `~/projects/commander/.venv`, installs `textual`, and links `~/.local/bin/commander` (XDG). Ensure `~/.local/bin` is in your PATH:
+`make install` runs `npm install`, builds the TypeScript, and links `~/.local/bin/commander` (XDG). Ensure `~/.local/bin` is in your PATH:
 
 ```bash
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
@@ -33,6 +33,7 @@ source ~/.zshrc
 ```
 
 Install warns if iTerm2 is not the current terminal — commander drives iTerm2 via AppleScript (tab focus, buffer capture). Install with `brew install --cask iterm2`.
+
 
 ## Register your repos
 
@@ -76,19 +77,47 @@ Ship a skill (`.claude/skills/commander/SKILL.md`) or a snippet in your project 
 
 ## TUI keybindings
 
+Standard vim motions (`j`/`k`/`gg`/`G`/`Ctrl-U`/`Ctrl-D`) work for nav in the table and scroll in the preview.
+
 | Key | Action |
 |-----|--------|
-| `j` / `k` | Navigate up / down |
-| `gg` | Jump to top |
-| `G` | Jump to bottom |
-| `Enter` | Open side panel showing the selected session's iTerm buffer |
-| `Esc` | Close panel / cancel input |
-| `i` | Open input box; type + Enter to send to the selected session's tty |
+| `Enter` | Open the selected session's iTerm buffer in preview |
+| `Esc` | Close input box, or leave preview back to the table |
+| `i` | Open input box; type + Enter to send text to the selected session's tty |
 | `t` | Jump to that session's iTerm tab |
 | `r` | Release the lock on the selected row's repo |
 | `s` | Steal the lock on the selected row's repo (refuses if main worktree is dirty) |
-| `F5` | Force refresh |
-| `q` / `Ctrl+C` | Quit |
+| `R` | Force refresh |
+| `Ctrl+C` | Clear the input box (only when input is open) |
+| `q` / `Ctrl+Q` | Quit |
+
+## Theming
+
+Commander respects your terminal's color scheme — named colors (`cyan`, `green`, `red`, etc.) resolve through your iTerm profile, so a light-mode iTerm just works. Two built-in themes and a config-file escape hatch:
+
+- `--theme default` — colored, uses terminal palette (the default)
+- `--theme mono` — no colors, emphasis via bold/underline only (accessibility / high-contrast / color-blindness)
+
+Resolution priority (highest wins):
+
+1. `--theme <name>` flag on `commander view`
+2. `$COMMANDER_THEME` env var
+3. `~/.config/commander/theme.json` (or `$XDG_CONFIG_HOME/commander/theme.json`)
+4. Built-in `default`
+
+The config file is a partial override, optionally extending a built-in:
+
+```json
+{
+  "extends": "default",
+  "selectedBg": "magenta",
+  "approval": "#ff5555",
+  "input": "yellow",
+  "useDim": false
+}
+```
+
+Semantic tokens: `primary`, `primaryBorder`, `selectedBg`, `lockHeld`, `lockStale`, `running`, `input`, `approval`, `info`, `warn`, `error`, `inputBorder`, `inputChevron`, `useBold`, `useUnderline`, `useDim`. Values are Ink color names (`red`/`yellow`/`green`/…) or hex strings.
 
 ## Lock lifecycle
 
