@@ -1,0 +1,19 @@
+import React from 'react';
+import { Box, Text } from 'ink';
+import TextInput from 'ink-text-input';
+
+interface Props {
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: (v: string) => void;
+  focus: boolean;
+}
+
+export function InputBox({ value, onChange, onSubmit, focus }: Props): React.ReactElement {
+  return (
+    <Box borderStyle="single" borderColor="cyan" paddingX={1}>
+      <Text color="cyan">▸ </Text>
+      <TextInput value={value} onChange={onChange} onSubmit={onSubmit} focus={focus} />
+    </Box>
+  );
+}

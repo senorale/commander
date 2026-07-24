@@ -4,8 +4,10 @@ PY          := $(VENV)/bin/python
 PIP         := $(VENV)/bin/pip
 BIN_DIR     := $(HOME)/.local/bin
 BIN         := $(BIN_DIR)/commander
+NEXT_BIN    := $(BIN_DIR)/commander-next
 
-.PHONY: help install venv deps shim uninstall clean test smoke check-iterm
+.PHONY: help install venv deps shim uninstall clean test smoke check-iterm \
+        dev-install dev-build dev-shim dev-uninstall
 
 help:
 	@echo "make install    — create venv, install deps, install shim to ~/.local/bin/commander"
@@ -57,3 +59,30 @@ uninstall:
 
 clean:
 	rm -rf $(VENV)
+
+# ------------------------------------------------------------------
+# Ink/TS rewrite (branch `ink-rewrite`) — parallel `commander-next`
+# ------------------------------------------------------------------
+
+dev-install: dev-build dev-shim
+	@echo ""
+	@echo "commander-next installed. Try:"
+	@echo "  commander-next status"
+	@echo "  commander-next view"
+
+dev-build:
+	@npm install --silent
+	@npm run build --silent
+
+dev-shim:
+	@mkdir -p $(BIN_DIR)
+	@printf '%s\n' \
+		'#!/usr/bin/env bash' \
+		'# commander-next — Ink/TS rewrite (runs alongside python `commander`)' \
+		'exec node "$$HOME/projects/commander/dist/cli.js" "$$@"' \
+		> $(NEXT_BIN)
+	@chmod +x $(NEXT_BIN)
+	@echo "installed shim: $(NEXT_BIN)"
+
+dev-uninstall:
+	rm -f $(NEXT_BIN)
