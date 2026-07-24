@@ -8,11 +8,10 @@ interface Props {
 }
 
 const COL = {
-  worktree: 40,
-  status: 22,
-  pid: 8,
-  name: 22,
-  holds: 20,
+  worktree: 32,
+  status: 10,
+  task: 80,
+  holds: 16,
 };
 
 function pad(s: string, n: number): string {
@@ -44,8 +43,7 @@ export function SessionTable({ rows, cursor }: Props): React.ReactElement {
       <Box>
         <Text bold underline>{pad('Worktree', COL.worktree)}</Text>
         <Text bold underline>{pad('Status', COL.status)}</Text>
-        <Text bold underline>{pad('PID', COL.pid)}</Text>
-        <Text bold underline>{pad('Name', COL.name)}</Text>
+        <Text bold underline>{pad('Task', COL.task)}</Text>
         <Text bold underline>{pad('Holds', COL.holds)}</Text>
       </Box>
       {rows.length === 0 && (
@@ -60,8 +58,7 @@ export function SessionTable({ rows, cursor }: Props): React.ReactElement {
           <Box key={`${r.pid}-${i}`}>
             <Cell width={COL.worktree} selected={selected}>{shortWorktree(r.cwd)}</Cell>
             <Cell width={COL.status} selected={selected} color={d.color} bold={d.bold} dim={d.dim}>{d.label}</Cell>
-            <Cell width={COL.pid} selected={selected}>{String(r.pid)}</Cell>
-            <Cell width={COL.name} selected={selected}>{r.name || '-'}</Cell>
+            <Cell width={COL.task} selected={selected} dim={!r.title}>{r.title || '-'}</Cell>
             <Cell width={COL.holds} selected={selected}>{r.holds ? `🔒 ${r.holds}` : ''}</Cell>
           </Box>
         );

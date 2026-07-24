@@ -1,5 +1,43 @@
 import { execa } from 'execa';
 
+/**
+ * Return a map of tty → iTerm session name (what Claude sets as the tab title,
+ * e.g. "⠂ Improve Commander CLI theming"). Empty on failure.
+ * Single osascript call — cheap enough for the 2s refresh loop.
+ */
+export async function getITermSessionNames(): Promise<Record<string, string>> {
+  const script = `
+    tell application "iTerm2"
+        set out to ""
+        repeat with w in windows
+            repeat with t in tabs of w
+                repeat with sess in sessions of t
+                    set out to out & (tty of sess) & (ASCII character 9) & (name of sess) & linefeed
+                end repeat
+            end repeat
+        end repeat
+        return out
+    end tell
+  `;
+  try {
+    const { stdout } = await execa('osascript', ['-e', script], {
+      timeout: 3000,
+      reject: false,
+    });
+    const out: Record<string, string> = {};
+    for (const line of (stdout || '').split('\n')) {
+      const idx = line.indexOf('\t');
+      if (idx < 0) continue;
+      const tty = line.slice(0, idx);
+      const name = line.slice(idx + 1);
+      if (tty) out[tty] = name;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 /** Return contents of the iTerm2 session on `tty` (last `maxLines`). Empty on failure. */
 export async function contentForTty(tty: string, maxLines = 400): Promise<string> {
   const script = `

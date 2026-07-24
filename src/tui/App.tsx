@@ -156,19 +156,10 @@ export function App(): React.ReactElement {
     }
   }, [inputOpen]);
 
-  const openInput = useCallback(async () => {
+  const openInput = useCallback(() => {
     const row = stateRef.current.rows[cursorRef.current];
     if (!row) {
       flash('select a row first', 'warn');
-      return;
-    }
-    if (!row.pid) {
-      flash('selected row has no pid', 'warn');
-      return;
-    }
-    const tty = await findTtyForPid(row.pid);
-    if (!tty) {
-      flash('selected row has no tty (cannot send input)', 'warn');
       return;
     }
     setInputOpen(true);
@@ -259,6 +250,9 @@ export function App(): React.ReactElement {
     }
   }, [flash, load]);
 
+  const termRows = stdout?.rows ?? 40;
+  const previewHeight = Math.max(5, termRows - 8);
+
   useInput(
     (input, key) => {
       // While input box is focused, only handle Escape here; TextInput consumes the rest.
@@ -267,29 +261,61 @@ export function App(): React.ReactElement {
         return;
       }
 
+      // Global keys — work in both table and preview modes.
       if (key.ctrl && input === 'c') return exit();
       if (input === 'q') return exit();
       if (key.escape) return closePanels();
+      if (input === 'i') {
+        openInput();
+        return;
+      }
+      if (input === 't') return void doFocusTab();
+      if (input === 'r') return void doRelease();
+      if (input === 's') return void doSteal();
 
       if (mode === 'preview') {
-        const lines = preview.content ? preview.content.split('\n').length : 0;
+        const totalLines = preview.content ? preview.content.split('\n').length : 0;
+        const maxScroll = Math.max(0, totalLines - previewHeight);
+        const pageStep = Math.max(1, Math.floor(previewHeight / 2));
         if (input === 'j' || key.downArrow) {
-          setPreview((p) => ({
-            ...p,
-            scrollOffset: Math.max(0, p.scrollOffset - 1),
-            atBottom: p.scrollOffset - 1 <= 0,
-          }));
+          setPreview((p) => {
+            const next = Math.max(0, p.scrollOffset - 1);
+            return { ...p, scrollOffset: next, atBottom: next === 0 };
+          });
           return;
         }
         if (input === 'k' || key.upArrow) {
           setPreview((p) => {
-            const next = Math.min(lines, p.scrollOffset + 1);
+            const next = Math.min(maxScroll, p.scrollOffset + 1);
+            return { ...p, scrollOffset: next, atBottom: next === 0 };
+          });
+          return;
+        }
+        if (key.ctrl && input === 'd') {
+          setPreview((p) => {
+            const next = Math.max(0, p.scrollOffset - pageStep);
+            return { ...p, scrollOffset: next, atBottom: next === 0 };
+          });
+          return;
+        }
+        if (key.ctrl && input === 'u') {
+          setPreview((p) => {
+            const next = Math.min(maxScroll, p.scrollOffset + pageStep);
             return { ...p, scrollOffset: next, atBottom: next === 0 };
           });
           return;
         }
         if (input === 'G') {
           setPreview((p) => ({ ...p, scrollOffset: 0, atBottom: true }));
+          return;
+        }
+        if (input === 'g') {
+          if (lastKey.current === 'g') {
+            setPreview((p) => ({ ...p, scrollOffset: maxScroll, atBottom: maxScroll === 0 }));
+            lastKey.current = '';
+            return;
+          }
+          lastKey.current = 'g';
           return;
         }
         if (input === 'R') {
@@ -332,26 +358,12 @@ export function App(): React.ReactElement {
         return;
       }
       if (key.return) return openPreview();
-      if (input === 'i') return void openInput();
-      if (input === 't') return void doFocusTab();
-      if (input === 'r') return void doRelease();
-      if (input === 's') return void doSteal();
       lastKey.current = input;
     },
     { isActive: true },
   );
 
   const waitingCount = state.rows.filter(isWaitingRow).length;
-  const termRows = stdout?.rows ?? 40;
-  // Reserve rows: header(3) + locks(1) + notice(1) + status(1) + preview title(1) + margins
-  const previewHeight = Math.max(5, termRows - 8);
-
-  const hint =
-    mode === 'preview'
-      ? 'q quit • j/k scroll • G bottom • Esc back • R refresh'
-      : inputOpen
-        ? 'Enter send • Esc cancel'
-        : undefined;
 
   return (
     <Box flexDirection="column">
@@ -388,12 +400,7 @@ export function App(): React.ReactElement {
           </Text>
         </Box>
       )}
-      <StatusBar
-        sessions={state.rows.length}
-        waiting={waitingCount}
-        refreshSec={REFRESH_MS / 1000}
-        hint={hint}
-      />
+      <StatusBar sessions={state.rows.length} waiting={waitingCount} />
     </Box>
   );
 }

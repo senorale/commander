@@ -2,56 +2,63 @@ import { describe, it, expect } from 'vitest';
 import { statusDisplay, shortWorktree, isWaitingRow } from './sessions.js';
 
 describe('statusDisplay', () => {
-  it('waitingFor=approval → red bold "waiting: approval"', () => {
+  it('waitingFor=approval → red bold "approve?"', () => {
     expect(statusDisplay({ status: '', waitingFor: 'approval', kind: 'interactive' })).toEqual({
-      label: 'waiting: approval',
+      label: 'approve?',
       color: 'red',
       bold: true,
     });
   });
 
-  it('waitingFor=permission → same red bold approval label', () => {
+  it('waitingFor=permission → same', () => {
     expect(statusDisplay({ status: '', waitingFor: 'permission', kind: 'interactive' })).toEqual({
-      label: 'waiting: approval',
+      label: 'approve?',
       color: 'red',
       bold: true,
     });
   });
 
-  it('waitingFor=input → yellow bold "waiting: input"', () => {
+  it('waitingFor=input → yellow bold "input?"', () => {
     expect(statusDisplay({ status: '', waitingFor: 'input', kind: 'interactive' })).toEqual({
-      label: 'waiting: input',
+      label: 'input',
       color: 'yellow',
       bold: true,
     });
   });
 
-  it('unknown waitingFor → "waiting: X" yellow', () => {
+  it('unknown waitingFor → shown raw yellow bold', () => {
     expect(statusDisplay({ status: '', waitingFor: 'xyz', kind: 'interactive' })).toEqual({
-      label: 'waiting: xyz',
+      label: 'xyz',
       color: 'yellow',
       bold: true,
     });
   });
 
-  it('status=busy → green', () => {
+  it('status=busy → green "running"', () => {
     expect(statusDisplay({ status: 'busy', waitingFor: '', kind: 'interactive' })).toEqual({
-      label: 'busy',
+      label: 'running',
       color: 'green',
     });
   });
 
-  it('status=idle → yellow bold "waiting: input"', () => {
+  it('status=idle interactive → yellow bold "input?"', () => {
     expect(statusDisplay({ status: 'idle', waitingFor: '', kind: 'interactive' })).toEqual({
-      label: 'waiting: input',
+      label: 'input',
       color: 'yellow',
       bold: true,
     });
   });
 
-  it('status=done → dim', () => {
-    expect(statusDisplay({ status: 'done', waitingFor: '', kind: 'interactive' })).toEqual({
-      label: 'done',
+  it('status=idle non-interactive → raw dim', () => {
+    expect(statusDisplay({ status: 'idle', waitingFor: '', kind: 'background' })).toEqual({
+      label: 'idle',
+      dim: true,
+    });
+  });
+
+  it('unknown status → raw dim', () => {
+    expect(statusDisplay({ status: 'foo', waitingFor: '', kind: 'interactive' })).toEqual({
+      label: 'foo',
       dim: true,
     });
   });

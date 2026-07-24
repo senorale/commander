@@ -76,18 +76,17 @@ Ship a skill (`.claude/skills/commander/SKILL.md`) or a snippet in your project 
 
 ## TUI keybindings
 
+Standard vim motions (`j`/`k`/`gg`/`G`/`Ctrl-U`/`Ctrl-D`) work for nav in the table and scroll in the preview.
+
 | Key | Action |
 |-----|--------|
-| `j` / `k` | Navigate up / down |
-| `gg` | Jump to top |
-| `G` | Jump to bottom |
-| `Enter` | Open side panel showing the selected session's iTerm buffer |
-| `Esc` | Close panel / cancel input |
-| `i` | Open input box; type + Enter to send to the selected session's tty |
+| `Enter` | Open the selected session's iTerm buffer in preview |
+| `Esc` | Close input box, or leave preview back to the table |
+| `i` | Open input box; type + Enter to send text to the selected session's tty |
 | `t` | Jump to that session's iTerm tab |
 | `r` | Release the lock on the selected row's repo |
 | `s` | Steal the lock on the selected row's repo (refuses if main worktree is dirty) |
-| `F5` | Force refresh |
+| `R` | Force refresh |
 | `q` / `Ctrl+C` | Quit |
 
 ## Lock lifecycle

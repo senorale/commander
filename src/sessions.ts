@@ -1,6 +1,8 @@
 import { execa } from 'execa';
 import { loadRegistry } from './registry.js';
 import { readLock } from './lock.js';
+import { getPsTable, findTtyForPidCached } from './tty.js';
+import { getITermSessionNames } from './iterm.js';
 import type { Lock } from './types.js';
 
 export interface ClaudeSession {
@@ -15,6 +17,7 @@ export interface ClaudeSession {
 
 export interface EnrichedRow extends ClaudeSession {
   holds: string;
+  title: string; // iTerm tab title (Claude-set task summary), '' if unavailable
 }
 
 /** Call `claude agents --json`. Returns [] on any failure. */
@@ -52,19 +55,29 @@ export function getLocks(): Record<string, Lock> {
   return out;
 }
 
-/** Sessions × locks join, sorted by (cwd, interactive-first, pid). */
+/** Sessions × locks × iTerm-tab-title join, sorted by (cwd, interactive-first, pid). */
 export async function enrichRows(): Promise<EnrichedRow[]> {
-  const [sessions, locks] = [await getSessions(), getLocks()];
+  const [sessions, itermNames, psTable] = await Promise.all([
+    getSessions(),
+    getITermSessionNames(),
+    getPsTable(),
+  ]);
+  const locks = getLocks();
   const sessionToRepo: Record<string, string> = {};
   const pidToRepo: Record<number, string> = {};
   for (const [repo, lk] of Object.entries(locks)) {
     if (lk.session_id) sessionToRepo[lk.session_id] = repo;
     if (Number.isFinite(lk.holder_pid)) pidToRepo[lk.holder_pid] = repo;
   }
-  const rows: EnrichedRow[] = sessions.map((s) => ({
-    ...s,
-    holds: sessionToRepo[s.sessionId] || pidToRepo[s.pid] || '',
-  }));
+  const rows: EnrichedRow[] = sessions.map((s) => {
+    const tty = s.pid ? findTtyForPidCached(s.pid, psTable) : null;
+    const rawTitle = (tty && itermNames[tty]) || '';
+    return {
+      ...s,
+      holds: sessionToRepo[s.sessionId] || pidToRepo[s.pid] || '',
+      title: stripParens(rawTitle),
+    };
+  });
   rows.sort((a, b) => {
     if (a.cwd !== b.cwd) return a.cwd < b.cwd ? -1 : 1;
     const ak = a.kind === 'interactive' ? 0 : 1;
@@ -75,15 +88,8 @@ export async function enrichRows(): Promise<EnrichedRow[]> {
   return rows;
 }
 
-const WAITING_LABELS: Record<string, string> = {
-  input: 'waiting: input',
-  user_input: 'waiting: input',
-  prompt: 'waiting: input',
-  approval: 'waiting: approval',
-  permission: 'waiting: approval',
-  tool_use: 'waiting: approval',
-  confirmation: 'waiting: approval',
-};
+const APPROVAL_WAITS = new Set(['approval', 'permission', 'tool_use', 'confirmation']);
+const INPUT_WAITS = new Set(['input', 'user_input', 'prompt']);
 
 export interface StatusDisplay {
   label: string;
@@ -97,15 +103,17 @@ export function statusDisplay(row: Pick<ClaudeSession, 'status' | 'waitingFor' |
   const status = (row.status || '').toLowerCase();
   const waitingFor = (row.waitingFor || '').toLowerCase();
 
-  if (waitingFor) {
-    const label = WAITING_LABELS[waitingFor] ?? `waiting: ${waitingFor}`;
-    return { label, color: label.includes('approval') ? 'red' : 'yellow', bold: true };
-  }
-  if (status === 'waiting') return { label: 'waiting', color: 'yellow', bold: true };
-  if (status === 'busy') return { label: 'busy', color: 'green' };
-  if (status === 'idle') return { label: 'waiting: input', color: 'yellow', bold: true };
-  if (status === 'done') return { label: 'done', dim: true };
-  return { label: status };
+  if (APPROVAL_WAITS.has(waitingFor)) return { label: 'approve?', color: 'red', bold: true };
+  if (INPUT_WAITS.has(waitingFor)) return { label: 'input', color: 'yellow', bold: true };
+  if (waitingFor) return { label: waitingFor, color: 'yellow', bold: true };
+  if (status === 'busy') return { label: 'running', color: 'green' };
+  if (status === 'idle' && row.kind === 'interactive') return { label: 'input', color: 'yellow', bold: true };
+  return { label: status, dim: true };
+}
+
+/** Drop parenthetical suffixes iTerm adds to tab titles like " (claude)" / " (caffeinate)". */
+export function stripParens(s: string): string {
+  return s.replace(/\s*\([^)]*\)/g, '').trim();
 }
 
 export function shortWorktree(cwd: string): string {
