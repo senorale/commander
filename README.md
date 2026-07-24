@@ -25,12 +25,14 @@ cd ~/projects/commander
 make install
 ```
 
-`make install` creates `~/projects/commander/.venv`, installs `textual`, and links `~/bin/commander`. Ensure `~/bin` is in your PATH:
+`make install` creates `~/projects/commander/.venv`, installs `textual`, and links `~/.local/bin/commander` (XDG). Ensure `~/.local/bin` is in your PATH:
 
 ```bash
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
+Install warns if iTerm2 is not the current terminal — commander drives iTerm2 via AppleScript (tab focus, buffer capture). Install with `brew install --cask iterm2`.
 
 ## Register your repos
 
@@ -122,7 +124,7 @@ Stale locks (holder pid no longer alive) are detected via `os.kill(pid, 0)` and 
 ├── Makefile
 └── README.md
 
-~/bin/commander              # shim that runs `.venv/bin/python -m commander.cli`
+~/.local/bin/commander       # shim that runs `.venv/bin/python -m commander.cli`
 ~/.claude/commander/
 ├── registry.json            # repo registry
 └── <repo>.lock              # per-repo lock (present = held)

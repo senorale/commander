@@ -2,20 +2,26 @@ PROJECT_DIR := $(HOME)/projects/commander
 VENV        := $(PROJECT_DIR)/.venv
 PY          := $(VENV)/bin/python
 PIP         := $(VENV)/bin/pip
-BIN         := $(HOME)/bin/commander
+BIN_DIR     := $(HOME)/.local/bin
+BIN         := $(BIN_DIR)/commander
 
-.PHONY: help install venv deps shim uninstall clean test smoke
+.PHONY: help install venv deps shim uninstall clean test smoke check-iterm
 
 help:
-	@echo "make install    — create venv, install deps, install shim to ~/bin/commander"
+	@echo "make install    — create venv, install deps, install shim to ~/.local/bin/commander"
 	@echo "make venv       — create the venv only"
 	@echo "make deps       — (re)install python deps into venv"
-	@echo "make shim       — (re)write the ~/bin/commander shim"
+	@echo "make shim       — (re)write the ~/.local/bin/commander shim"
 	@echo "make smoke      — run a non-destructive smoke test"
-	@echo "make uninstall  — remove ~/bin/commander (leaves venv + registry)"
+	@echo "make uninstall  — remove ~/.local/bin/commander (leaves venv + registry)"
 	@echo "make clean      — remove venv"
 
-install: venv deps shim
+install: check-iterm venv deps shim
+
+check-iterm:
+	@if [ "$$TERM_PROGRAM" != "iTerm.app" ]; then \
+		printf '\033[33mwarning:\033[0m iTerm2 not detected (TERM_PROGRAM=%s). commander uses AppleScript against iTerm2 for tab focus + buffer capture; features will degrade elsewhere. Install: brew install --cask iterm2\n' "$${TERM_PROGRAM:-unset}"; \
+	fi
 	@echo ""
 	@echo "commander installed. Try:"
 	@echo "  commander status"
@@ -30,7 +36,7 @@ deps: venv
 	$(PIP) install --quiet textual
 
 shim:
-	@mkdir -p $(HOME)/bin
+	@mkdir -p $(BIN_DIR)
 	@printf '%s\n' \
 		'#!/usr/bin/env bash' \
 		'# Commander shim — invokes the Python package at ~/projects/commander' \
