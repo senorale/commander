@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { isLockStale } from '../lock.js';
 import { fmtAge } from '../format.js';
+import { useTheme } from '../theme.js';
 import type { Lock } from '../types.js';
 
 interface Props {
@@ -9,11 +10,12 @@ interface Props {
 }
 
 export function LocksBar({ locks }: Props): React.ReactElement {
+  const theme = useTheme();
   const entries = Object.entries(locks);
   if (entries.length === 0) {
     return (
       <Box paddingX={1}>
-        <Text dimColor>no dev-env locks held</Text>
+        <Text dimColor={theme.useDim}>no dev-env locks held</Text>
       </Box>
     );
   }
@@ -24,12 +26,12 @@ export function LocksBar({ locks }: Props): React.ReactElement {
         const sess = (lk.session_id || '?').slice(0, 8);
         return (
           <React.Fragment key={repo}>
-            {i > 0 && <Text dimColor>{'  |  '}</Text>}
-            <Text color={stale ? 'red' : 'green'} bold>
+            {i > 0 && <Text dimColor={theme.useDim}>{'  |  '}</Text>}
+            <Text color={stale ? theme.lockStale : theme.lockHeld} bold={theme.useBold}>
               {stale ? 'STALE' : 'held'}
             </Text>
             <Text> </Text>
-            <Text bold>{repo}</Text>
+            <Text bold={theme.useBold}>{repo}</Text>
             <Text>{' branch='}{lk.branch}</Text>
             <Text>{' session='}{sess}</Text>
             <Text>{' age='}{fmtAge(lk.acquired_at)}</Text>

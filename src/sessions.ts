@@ -91,24 +91,27 @@ export async function enrichRows(): Promise<EnrichedRow[]> {
 const APPROVAL_WAITS = new Set(['approval', 'permission', 'tool_use', 'confirmation']);
 const INPUT_WAITS = new Set(['input', 'user_input', 'prompt']);
 
+export type StatusRole = 'ok' | 'input' | 'approval' | undefined;
+
 export interface StatusDisplay {
   label: string;
-  color?: 'red' | 'yellow' | 'green' | 'gray';
+  role: StatusRole;
   bold?: boolean;
   dim?: boolean;
 }
 
-/** Map (status, waitingFor) → renderable label + color for Ink. */
+/** Map (status, waitingFor) → renderable label + semantic role. Colors are
+ * resolved by the theme layer at render time. */
 export function statusDisplay(row: Pick<ClaudeSession, 'status' | 'waitingFor' | 'kind'>): StatusDisplay {
   const status = (row.status || '').toLowerCase();
   const waitingFor = (row.waitingFor || '').toLowerCase();
 
-  if (APPROVAL_WAITS.has(waitingFor)) return { label: 'approve?', color: 'red', bold: true };
-  if (INPUT_WAITS.has(waitingFor)) return { label: 'input', color: 'yellow', bold: true };
-  if (waitingFor) return { label: waitingFor, color: 'yellow', bold: true };
-  if (status === 'busy') return { label: 'running', color: 'green' };
-  if (status === 'idle' && row.kind === 'interactive') return { label: 'input', color: 'yellow', bold: true };
-  return { label: status, dim: true };
+  if (APPROVAL_WAITS.has(waitingFor)) return { label: 'approve?', role: 'approval', bold: true };
+  if (INPUT_WAITS.has(waitingFor)) return { label: 'input', role: 'input', bold: true };
+  if (waitingFor) return { label: waitingFor, role: 'input', bold: true };
+  if (status === 'busy') return { label: 'running', role: 'ok' };
+  if (status === 'idle' && row.kind === 'interactive') return { label: 'input', role: 'input', bold: true };
+  return { label: status, role: undefined, dim: true };
 }
 
 /** Drop parenthetical suffixes iTerm adds to tab titles like " (claude)" / " (caffeinate)". */

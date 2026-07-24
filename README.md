@@ -89,6 +89,34 @@ Standard vim motions (`j`/`k`/`gg`/`G`/`Ctrl-U`/`Ctrl-D`) work for nav in the ta
 | `R` | Force refresh |
 | `q` / `Ctrl+C` | Quit |
 
+## Theming
+
+Commander respects your terminal's color scheme — named colors (`cyan`, `green`, `red`, etc.) resolve through your iTerm profile, so a light-mode iTerm just works. Two built-in themes and a config-file escape hatch:
+
+- `--theme default` — colored, uses terminal palette (the default)
+- `--theme mono` — no colors, emphasis via bold/underline only (accessibility / high-contrast / color-blindness)
+
+Resolution priority (highest wins):
+
+1. `--theme <name>` flag on `commander view`
+2. `$COMMANDER_THEME` env var
+3. `~/.config/commander/theme.json` (or `$XDG_CONFIG_HOME/commander/theme.json`)
+4. Built-in `default`
+
+The config file is a partial override, optionally extending a built-in:
+
+```json
+{
+  "extends": "default",
+  "selectedBg": "magenta",
+  "approval": "#ff5555",
+  "input": "yellow",
+  "useDim": false
+}
+```
+
+Semantic tokens: `primary`, `primaryBorder`, `selectedBg`, `lockHeld`, `lockStale`, `running`, `input`, `approval`, `info`, `warn`, `error`, `inputBorder`, `inputChevron`, `useBold`, `useUnderline`, `useDim`. Values are Ink color names (`red`/`yellow`/`green`/…) or hex strings.
+
 ## Lock lifecycle
 
 `commander take` from a worktree at `~/code/my_repo-featureX` on branch `featureX`:

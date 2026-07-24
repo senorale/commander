@@ -62,9 +62,10 @@ program
 program
   .command('view')
   .description('launch the live TUI dashboard')
-  .action(async () => {
+  .option('--theme <name>', 'theme: default | mono (or a name from ~/.config/commander/theme.json)')
+  .action(async (opts) => {
     const { runView } = await import('./commands/view.js');
-    process.exit(await runView());
+    process.exit(await runView({ theme: opts.theme }));
   });
 
 // Bare `commander` → view (matches python behavior)

@@ -6,6 +6,7 @@ import { findTtyForPid } from '../tty.js';
 import { contentForTty, focusTty, focusUniqueId, sendForTty } from '../iterm.js';
 import { detectRepo, release, steal } from '../core.js';
 import { CommanderError } from '../errors.js';
+import { useTheme } from '../theme.js';
 import { LocksBar } from './LocksBar.js';
 import { SessionTable } from './SessionTable.js';
 import { StatusBar } from './StatusBar.js';
@@ -364,11 +365,14 @@ export function App(): React.ReactElement {
   );
 
   const waitingCount = state.rows.filter(isWaitingRow).length;
+  const theme = useTheme();
+  const noticeColor =
+    notice?.kind === 'error' ? theme.error : notice?.kind === 'warn' ? theme.warn : theme.info;
 
   return (
     <Box flexDirection="column">
-      <Box paddingX={1} borderStyle="single" borderColor="cyan">
-        <Text bold color="cyan">Commander</Text>
+      <Box paddingX={1} borderStyle="single" borderColor={theme.primaryBorder}>
+        <Text bold={theme.useBold} color={theme.primary}>Commander</Text>
       </Box>
       <LocksBar locks={state.locks} />
       {mode === 'table' ? (
@@ -393,11 +397,7 @@ export function App(): React.ReactElement {
       )}
       {notice && (
         <Box paddingX={1}>
-          <Text
-            color={notice.kind === 'error' ? 'red' : notice.kind === 'warn' ? 'yellow' : 'green'}
-          >
-            {notice.msg}
-          </Text>
+          <Text color={noticeColor}>{notice.msg}</Text>
         </Box>
       )}
       <StatusBar sessions={state.rows.length} waiting={waitingCount} />

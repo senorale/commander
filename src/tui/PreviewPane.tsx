@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { useTheme } from '../theme.js';
 
 interface Props {
   pid: number | null;
@@ -18,6 +19,7 @@ export function PreviewPane({
   scrollOffset,
   viewportHeight,
 }: Props): React.ReactElement {
+  const theme = useTheme();
   const title = `Preview  pid=${pid ?? '?'}  tty=${tty ?? '?'}  ${name || ''}`;
   const lines = content ? content.split('\n') : [];
   const visibleH = Math.max(1, viewportHeight);
@@ -34,12 +36,12 @@ export function PreviewPane({
   return (
     <Box flexDirection="column">
       <Box paddingX={1}>
-        <Text bold>{title}</Text>
+        <Text bold={theme.useBold}>{title}</Text>
         <Text> </Text>
-        <Text dimColor>{positionLabel}</Text>
+        <Text dimColor={theme.useDim}>{positionLabel}</Text>
       </Box>
       <Box flexDirection="column" paddingX={1}>
-        {slice.length === 0 && <Text dimColor>(empty buffer)</Text>}
+        {slice.length === 0 && <Text dimColor={theme.useDim}>(empty buffer)</Text>}
         {slice.map((l, i) => (
           <Text key={i} wrap="truncate">
             {l}

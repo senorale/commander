@@ -5,7 +5,7 @@ describe('statusDisplay', () => {
   it('waitingFor=approval → red bold "approve?"', () => {
     expect(statusDisplay({ status: '', waitingFor: 'approval', kind: 'interactive' })).toEqual({
       label: 'approve?',
-      color: 'red',
+      role: 'approval',
       bold: true,
     });
   });
@@ -13,7 +13,7 @@ describe('statusDisplay', () => {
   it('waitingFor=permission → same', () => {
     expect(statusDisplay({ status: '', waitingFor: 'permission', kind: 'interactive' })).toEqual({
       label: 'approve?',
-      color: 'red',
+      role: 'approval',
       bold: true,
     });
   });
@@ -21,7 +21,7 @@ describe('statusDisplay', () => {
   it('waitingFor=input → yellow bold "input?"', () => {
     expect(statusDisplay({ status: '', waitingFor: 'input', kind: 'interactive' })).toEqual({
       label: 'input',
-      color: 'yellow',
+      role: 'input',
       bold: true,
     });
   });
@@ -29,7 +29,7 @@ describe('statusDisplay', () => {
   it('unknown waitingFor → shown raw yellow bold', () => {
     expect(statusDisplay({ status: '', waitingFor: 'xyz', kind: 'interactive' })).toEqual({
       label: 'xyz',
-      color: 'yellow',
+      role: 'input',
       bold: true,
     });
   });
@@ -37,28 +37,30 @@ describe('statusDisplay', () => {
   it('status=busy → green "running"', () => {
     expect(statusDisplay({ status: 'busy', waitingFor: '', kind: 'interactive' })).toEqual({
       label: 'running',
-      color: 'green',
+      role: 'ok',
     });
   });
 
   it('status=idle interactive → yellow bold "input?"', () => {
     expect(statusDisplay({ status: 'idle', waitingFor: '', kind: 'interactive' })).toEqual({
       label: 'input',
-      color: 'yellow',
+      role: 'input',
       bold: true,
     });
   });
 
-  it('status=idle non-interactive → raw dim', () => {
+  it('status=idle non-interactive → raw dim, no role', () => {
     expect(statusDisplay({ status: 'idle', waitingFor: '', kind: 'background' })).toEqual({
       label: 'idle',
+      role: undefined,
       dim: true,
     });
   });
 
-  it('unknown status → raw dim', () => {
+  it('unknown status → raw dim, no role', () => {
     expect(statusDisplay({ status: 'foo', waitingFor: '', kind: 'interactive' })).toEqual({
       label: 'foo',
+      role: undefined,
       dim: true,
     });
   });

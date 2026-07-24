@@ -1,4 +1,4 @@
-export async function runView(): Promise<number> {
+export async function runView(opts: { theme?: string } = {}): Promise<number> {
   const { runTUI } = await import('../tui/index.js');
-  return runTUI();
+  return runTUI(opts);
 }
