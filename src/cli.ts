@@ -63,8 +63,8 @@ program
   .command('view')
   .description('launch the live TUI dashboard')
   .action(async () => {
-    console.error('error: TUI not yet ported (M3 in progress). Use `commander status` for now.');
-    process.exit(2);
+    const { runView } = await import('./commands/view.js');
+    process.exit(await runView());
   });
 
 // Bare `commander` → view (matches python behavior)
