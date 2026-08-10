@@ -67,6 +67,12 @@ commander status       # quick text status
 commander take
 ```
 
+Use the local committed branch without pushing it first when pre-push validation is required:
+
+```bash
+commander take --no-push
+```
+
 **After** you're done:
 
 ```bash
@@ -125,10 +131,10 @@ Semantic tokens: `primary`, `primaryBorder`, `selectedBg`, `lockHeld`, `lockStal
 
 1. Detect repo (`my_repo`) via `git rev-parse --git-common-dir`
 2. Refuse if uncommitted changes in the worktree
-3. `git push origin featureX`
+3. `git push origin featureX` (skipped with `--no-push`)
 4. `git checkout --detach` in the worktree (releases the branch grip)
 5. Write `~/.claude/commander/my_repo.lock` with holder metadata: `{repo, branch, holder_pid, session_id, iterm_session_id, acquired_at, original_base, worktree_path, main_path}`
-6. In main: `git fetch && git checkout featureX && git reset --hard origin/featureX`
+6. In main: use the remote branch by default, or the local committed branch with `--no-push`
 7. Run the repo's `rebuild_cmd`
 
 `commander release`:

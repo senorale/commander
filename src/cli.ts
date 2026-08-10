@@ -15,6 +15,7 @@ program
   .option('--branch <name>', 'branch (default: current branch in cwd)')
   .option('--wait', 'block until free')
   .option('--force', 'steal lock if held')
+  .option('--no-push', 'use the local committed branch without pushing to origin')
   .action(async (opts) => {
     const { runTake } = await import('./commands/take.js');
     process.exit(await runTake(opts));

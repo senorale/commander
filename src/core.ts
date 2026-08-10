@@ -58,6 +58,7 @@ export interface TakeOpts {
   branch?: string;
   wait?: boolean;
   force?: boolean;
+  noPush?: boolean;
   cwd?: string;
 }
 
@@ -94,7 +95,9 @@ export async function take(opts: TakeOpts = {}): Promise<Lock> {
     if (await isDirty(cwd)) {
       throw new CommanderError(`Uncommitted changes in worktree ${cwd}. Commit and retry.`);
     }
-    await execa('git', ['push', 'origin', branch], { cwd, stdio: 'inherit' });
+    if (!opts.noPush) {
+      await execa('git', ['push', 'origin', branch], { cwd, stdio: 'inherit' });
+    }
     await execa('git', ['checkout', '--detach'], { cwd, stdio: 'inherit' });
   } else {
     worktreePath = '';
@@ -120,9 +123,12 @@ export async function take(opts: TakeOpts = {}): Promise<Lock> {
   writeLock(repoName, lockData);
 
   try {
-    await execa('git', ['fetch', 'origin'], { cwd: mainPath, stdio: 'inherit' });
+    if (!opts.noPush) {
+      await execa('git', ['fetch', 'origin'], { cwd: mainPath, stdio: 'inherit' });
+    }
     await execa('git', ['checkout', branch], { cwd: mainPath, stdio: 'inherit' });
-    await execa('git', ['reset', '--hard', `origin/${branch}`], { cwd: mainPath, stdio: 'inherit' });
+    const resetTarget = opts.noPush ? branch : `origin/${branch}`;
+    await execa('git', ['reset', '--hard', resetTarget], { cwd: mainPath, stdio: 'inherit' });
     await execa(cfg.rebuild_cmd[0], cfg.rebuild_cmd.slice(1), { cwd: mainPath, stdio: 'inherit' });
   } catch (e) {
     throw new CommanderError(`main-side setup failed: ${(e as Error).message}`);

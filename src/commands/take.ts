@@ -6,11 +6,12 @@ export interface TakeCliOpts {
   branch?: string;
   wait?: boolean;
   force?: boolean;
+  push?: boolean;
 }
 
 export async function runTake(opts: TakeCliOpts): Promise<number> {
   try {
-    const lock = await take(opts);
+    const lock = await take({ ...opts, noPush: opts.push === false });
     console.log(`acquired ${lock.repo} branch=${lock.branch}`);
     return 0;
   } catch (e) {
