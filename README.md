@@ -11,6 +11,8 @@ Commander is two surfaces:
 
 The worktrees themselves are Claude Code's native `EnterWorktree` — a new session is instructed to create or attach to a worktree at `<repo>/.claude/worktrees/<branch>`. Commander doesn't create worktrees; it coordinates the shared dev-env container stack across the ones Claude has already made.
 
+![commander TUI — sessions grouped by worktree with lock holders pinned up top](docs/commander.png)
+
 ## Features
 
 - **CLI** — `take` / `release` / `steal` / `status` / `register`, called by agents from their Bash tool
