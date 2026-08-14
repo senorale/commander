@@ -79,7 +79,7 @@ commander take --no-push
 commander release
 ```
 
-Ship a skill (`.claude/skills/commander/SKILL.md`) or a snippet in your project `CLAUDE.md` that instructs sessions when to call these — commander is only useful if agents actually invoke it.
+A ready-to-use Claude Code skill lives at [`SKILL.md`](./SKILL.md) — copy it to `~/.claude/skills/commander/SKILL.md` and agents will invoke `commander take` / `release` automatically at the right moments. Commander is only useful if agents actually call it.
 
 ## TUI keybindings
 
